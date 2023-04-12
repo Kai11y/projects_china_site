@@ -13,55 +13,67 @@
 # elif "Выучил" - подумать - ок
 # После выбора появляется новый иероглиф - ок
 
+# 11/04:
+
+# Написать функцию, которая будет выдавать первые 5 карточек иероглифов из словаря для изучения
+# Далее будет запоминать какие иероглифы выучил, а какие нет
+# На следующий день будет выдавать следующие 5 карточек из списка + те, которые не выучил в предыдущие дни
+# Создать файл json, где будут хранится выученные слова, которые не будут повторяться и весь словарь с иероглифами
+
+# С учетом прошлой записи это надо будет разбить на мелкие функции
+# + выкладывать в общий репозиторий
+
 import random
+import json
 
-hieroglyphs_dict_in_list = [
-    {'иероглиф':'爱', 'перевод':'Любовь'},
-    {'иероглиф':'八', 'перевод':'Восемь'},
-    {'иероглиф':'爸爸', 'перевод':'Папа'},
-    {'иероглиф':'杯子', 'перевод':'Кружка'},
-    {'иероглиф':'北京', 'перевод':'Пекин'},
-    {'иероглиф':'读', 'перевод':'Читать'},
-    {'иероглиф':'不', 'перевод':'Нет'},
-    {'иероглиф':'不客气', 'перевод':'Не за что'},
-    {'иероглиф':'菜', 'перевод':'Овощи'},
-    {'иероглиф':'茶', 'перевод':'Чай'},
-    {'иероглиф':'吃', 'перевод':'Кушать'},
-    {'иероглиф':'出租车', 'перевод':'Такси'},
-    {'иероглиф':'打电话', 'перевод':'Звонить по телефону'},
-    {'иероглиф':'大', 'перевод':'Большой'},
-    {'иероглиф':'多', 'перевод':'Много'},
-    {'иероглиф':'点', 'перевод':'Капля'},
-    {'иероглиф':'电脑', 'перевод':'Компьютер'},
-    {'иероглиф':'电视', 'перевод':'Телевизор'},
-    {'иероглиф':'电影', 'перевод':'Кино'},
-    {'иероглиф':'东西', 'перевод':'Вещь'},
-    {'иероглиф':'都', 'перевод':'Все'}      
-]
+path_to_data = r'C:\projects\projects_china_site\data.json'
+path_to_learned = r'C:\projects\projects_china_site\learned.json'
+path_to_not_learned = r'C:\projects\projects_china_site\notlearned.json'
 
-def start(hieroglyphs_dict_in_list):
+def open_json(path_to_file):
+    try:
+        with open(path_to_file, 'r', encoding='utf-8') as json_file:
+            data = json.load(json_file)
+    except (json.decoder.JSONDecodeError, FileNotFoundError):
+            data = []
+    return data
+
+def get_data(hieroglyphs_dict_in_list):
     item = random.choice(hieroglyphs_dict_in_list)
+    return item
+
+def decompose(item):
     hieroglyph = item.get('иероглиф',{})
     translation = item.get('перевод',{})
     return hieroglyph, translation
 
-learned = []
-while True:
-    hieroglyph, translation = start(hieroglyphs_dict_in_list)
+def save(item, lists_of_hieroglyphs, path_to_file):
+    lists_of_hieroglyphs.append(item)
+    with open(path_to_file, 'w', encoding='utf-8') as json_file:
+        json.dump(lists_of_hieroglyphs, json_file)
+    
+
+hieroglyphs_dict_in_list = open_json(path_to_data)
+learned = open_json(path_to_learned)
+not_learned = open_json(path_to_not_learned)
+counter = 5
+while counter:
+    item = get_data(hieroglyphs_dict_in_list)
+    hieroglyph, translation = decompose(item)
     if hieroglyph in learned:
         continue
+    counter -= 1
     print(hieroglyph) 
-    choice_0 = input('Введи слово "Открыть", чтобы проверить перевод иероглифа: ')
-    if choice_0 == 'Открыть':
+    is_show_translate = input('Нажми Enter, чтобы увидеть перевод иероглифа: ')
+    if is_show_translate == '':
         print(translation)
-        choice_1 = input('Выучил?: ')
-        if choice_1 == 'Да':
-            learned.append(hieroglyph)
-            print(f'Твои выученные слова: {", ".join(learned)}')
-        
+        is_user_learned = input('Выучил?: ')
+        if is_user_learned == 'Да':
+            save(item, learned, path_to_learned)
+        else:
+            save(item, not_learned, path_to_not_learned)
 
-           
- 
+
 
 
 
